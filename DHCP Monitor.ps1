@@ -165,6 +165,7 @@ function PunchIt {
     }
 
     do{
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         $BlacklistedMACAddresses = @((Invoke-WebRequest -URI "https://raw.githubusercontent.com/RonRunnerElowSum/DHCPMonitor/Prod-Branch/BlacklistedMACs.cfg" -UseBasicParsing).Content)
         $TodaysDHCPLogs = Get-DhcpServerLog | Select-Object ID,Date,Time,Description,"Host Name","IP Address","MAC Address"
         $MACsDiscoveredInLogs = $TodaysDHCPLogs | Select-Object "MAC Address"
