@@ -166,7 +166,9 @@ function PunchIt {
 
     do{
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $BlacklistedMACAddresses = @((Invoke-WebRequest -URI "https://raw.githubusercontent.com/RonRunnerElowSum/DHCPMonitor/Prod-Branch/BlacklistedMACs.cfg" -UseBasicParsing).Content)
+        if(!(Test-Path -Path "C:\Temp")){New-Item -Path "C:\" -Name "Temp" -ItemType "Directory"}
+        Invoke-WebRequest -URI "https://raw.githubusercontent.com/RonRunnerElowSum/DHCPMonitor/Prod-Branch/BlacklistedMACs.cfg" -OutFile "C:\Temp\BlackListedMACs.cfg"
+        $BlacklistedMACAddresses = Get-Content -Path "C:\Temp\BlackListedMACs.cfg"
         $TodaysDHCPLogs = Get-DhcpServerLog | Select-Object ID,Date,Time,Description,"Host Name","IP Address","MAC Address"
         $MACsDiscoveredInLogs = $TodaysDHCPLogs | Select-Object "MAC Address"
         $BlacklistedMACAddresses | ForEach-Object {
