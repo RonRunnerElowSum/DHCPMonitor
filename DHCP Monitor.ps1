@@ -59,24 +59,8 @@ function Send-Alert () {
         }
     }
 
-    try{
-        if(!(Test-Path -Path "C:\MSP\EmailAlertConnectionInfo.txt")){
-            Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Error" -LogMessage "C:\MSP\EmailAlertConnectionInfo.txt does not exist...exiting..."
-            EXIT
-        }
-        $SensitiveString = Get-Content -Path "C:\MSP\EmailAlertConnectionInfo.txt" | ConvertTo-SecureString
-        $Marshal = [System.Runtime.InteropServices.Marshal]
-        $Bstr = $Marshal::SecureStringToBSTR($SensitiveString)
-        $DecryptedString = $Marshal::PtrToStringAuto($Bstr)
-        $Marshal::ZeroFreeBSTR($Bstr)
-        $Secret = $DecryptedString -split ";" | Select-Object -Index 3
-    }
-    catch{
-        Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Error" -LogMessage "Failed to decrypt email alert info..."
-    }
-
     $BodyJson = $SendGridBody | ConvertTo-Json -Depth 4
-    $Token = $Secret
+    $Token = $Script:Secret
     $Header = @{
         "authorization" = "Bearer $Token"
     }
@@ -175,12 +159,13 @@ function PunchIt {
         $FirstRecpient = $DecryptedString -split ";" | Select-Object -Index 0
         $SecondRecipient = $DecryptedString -split ";" | Select-Object -Index 1
         $SenderAddress = $DecryptedString -split ";" | Select-Object -Index 2
+        $Script:Secret = $DecryptedString -split ";" | Select-Object -Index 3
         $Recipients = "$FirstRecpient,$SecondRecipient"
     }
     catch{
         Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Error" -LogMessage "Failed to decrypt email alert info..."
     }
-    
+
     do{
         $TodaysDHCPLogs = Get-DhcpServerLog | Select-Object ID,Date,Time,Description,"Host Name","IP Address","MAC Address"
         $MACsDiscoveredInLogs = $TodaysDHCPLogs | Select-Object "MAC Address"
@@ -221,7 +206,7 @@ function PunchIt {
 
         }
 
-        Start-Sleep -Seconds 240
+        Start-Sleep -Seconds 60
 
     }
     while($True)    
