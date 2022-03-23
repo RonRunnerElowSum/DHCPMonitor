@@ -1,8 +1,3 @@
-$BlackListedMACs = @(
-"70ca973533d8",
-"00BFAF2E0BA4"
-)
-
 function Write-MSPLog {
     Param
     (
@@ -170,13 +165,14 @@ function PunchIt {
     }
 
     do{
+        $BlacklistedMACAddresses = @((Invoke-WebRequest -URI "https://raw.githubusercontent.com/RonRunnerElowSum/DHCPMonitor/Prod-Branch/BlacklistedMACs.cfg" -UseBasicParsing).Content)
         $TodaysDHCPLogs = Get-DhcpServerLog | Select-Object ID,Date,Time,Description,"Host Name","IP Address","MAC Address"
         $MACsDiscoveredInLogs = $TodaysDHCPLogs | Select-Object "MAC Address"
-        $BlackListedMACs | ForEach-Object {
+        $BlacklistedMACAddresses | ForEach-Object {
             if($MACsDiscoveredInLogs | Select-String "$_"){
-                [string]$BlacklistedMACFoundLogs = $TodaysDHCPLogs | Where-Object {$BlackListedMACs -contains $_."MAC Address"} | Format-Table -AutoSize | Out-String
+                [string]$BlacklistedMACFoundLogs = $TodaysDHCPLogs | Where-Object {$BlacklistedMACAddresses -contains $_."MAC Address"} | Format-Table -AutoSize | Out-String
                 try{
-                    $IPToRevoke = ($TodaysDHCPLogs | Where-Object {$BlackListedMACs -contains $_."MAC Address"})."IP Address" | Select-Object -First 1
+                    $IPToRevoke = ($TodaysDHCPLogs | Where-Object {$BlacklistedMACAddresses -contains $_."MAC Address"})."IP Address" | Select-Object -First 1
                     Remove-DhcpServerv4Lease -ComputerName $Env:ComputerName -IPAddress $IPToRevoke
                 }
                 catch{
