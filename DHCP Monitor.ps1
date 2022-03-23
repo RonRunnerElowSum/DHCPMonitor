@@ -1,6 +1,6 @@
 $BlackListedMACs = @(
 "70ca973533d8",
-"f4428f17e290"
+"00BFAF2E0BA4"
 )
 
 function Write-MSPLog {
@@ -175,6 +175,7 @@ function PunchIt {
         $FirstRecpient = $DecryptedString -split ";" | Select-Object -Index 0
         $SecondRecipient = $DecryptedString -split ";" | Select-Object -Index 1
         $SenderAddress = $DecryptedString -split ";" | Select-Object -Index 2
+        $Recipients = "$FirstRecpient,$SecondRecipient"
     }
     catch{
         Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Error" -LogMessage "Failed to decrypt email alert info..."
@@ -193,30 +194,30 @@ function PunchIt {
                 catch{
                     Write-Warning "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor failed to revoke the lease...address immediately!`r`n`r`n$BlacklistedMACFoundLogs`r`n`r`nRevoke lease error:`r`n$($global:intErr++)Error #:$global:intErr`r`n$Error$($Error.Clear())"
                     Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Warning" -LogMessage "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor failed to revoke the lease...address immediately!`r`n`r`n$BlacklistedMACFoundLogs`r`n`r`nRevoke lease error:`r`n$($global:intErr++)Error #:$global:intErr`r`n$Error$($Error.Clear())"
-                    Send-Alert -ToAddress "$FirstRecpient,$SecondRecipient" -FromAddress $SenderAddress -Subject "($Env:ComputerName) leased an IP to a blacklised device!" -Body "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor failed to revoke the lease...address immediately!`r`n`r`n$BlacklistedMACFoundLogs`r`n`r`nRevoke lease error:`r`n$($global:intErr++)Error #:$global:intErr`r`n$Error$($Error.Clear())"
+                    Send-Alert -ToAddress $Recipients -FromAddress $SenderAddress -Subject "($Env:ComputerName) leased an IP to a blacklised device!" -Body "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor failed to revoke the lease...address immediately!`r`n`r`n$BlacklistedMACFoundLogs`r`n`r`nRevoke lease error:`r`n$($global:intErr++)Error #:$global:intErr`r`n$Error$($Error.Clear())"
                 }
                 Write-Host "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor successfiully revoked the lease!`r`n`r`n$BlacklistedMACFoundLogs"
                 Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Information" -LogMessage "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor successfiully revoked the lease!`r`n`r`n$BlacklistedMACFoundLogs"
-                Send-Alert -ToAddress "$FirstRecpient,$SecondRecipient" -FromAddress $SenderAddress -Subject "($Env:ComputerName) leased an IP to a blacklised device and successfully revoked it!" -Body "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor successfiully revoked the lease!`r`n`r`n$BlacklistedMACFoundLogs"
+                Send-Alert -ToAddress $Recipients -FromAddress $SenderAddress -Subject "($Env:ComputerName) leased an IP to a blacklised device and successfully revoked it!" -Body "The DHCP server ($Env:ComputerName) leased an IP to a blacklised device and the DHCP Monitor successfiully revoked the lease!`r`n`r`n$BlacklistedMACFoundLogs"
             }   
         }
         if($TodaysDHCPLogs | Where-Object {$_.ID -eq 14}){
             [string]$EmptyDHCPPoolLogs = $TodaysDHCPLogs | Where-Object {$_.ID -eq 14} | Format-Table -AutoSize | Out-String
             Write-Host "The DHCP server ($Env:ComputerName) has run out of DHCP leases...address immediately!`r`n`r`n$EmptyDHCPPoolLogs"
             Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Warning" -LogMessage "The DHCP server ($Env:ComputerName) has run out of DHCP leases...address immediately!`r`n`r`n$EmptyDHCPPoolLogs"
-            Send-Alert -ToAddress "$FirstRecpient,$SecondRecipient" -FromAddress $SenderAddress -Subject "($Env:ComputerName) has run out of DHCP leases!" -Body "The DHCP server ($Env:ComputerName) has run out of DHCP leases...address immediately!`r`n`r`n$EmptyDHCPPoolLogs"
+            Send-Alert -ToAddress $Recipients -FromAddress $SenderAddress -Subject "($Env:ComputerName) has run out of DHCP leases!" -Body "The DHCP server ($Env:ComputerName) has run out of DHCP leases...address immediately!`r`n`r`n$EmptyDHCPPoolLogs"
         }
         if($TodaysDHCPLogs | Where-Object {$_.ID -eq 61}){
             [string]$RogueADDHCPServerLogs = $TodaysDHCPLogs | Where-Object {$_.ID -eq 61} | Format-Table -AutoSize | Out-String
             Write-Host "The DHCP server ($Env:ComputerName) has found another DHCP server on the network that belongs to the AD domain...address immediately!`r`n`r`n$RogueADDHCPServerLogs"
             Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Warning" -LogMessage "The DHCP server ($Env:ComputerName) has found another DHCP server on the network that belongs to the AD domain...address immediately!`r`n`r`n$RogueADDHCPServerLogs"
-            Send-Alert -ToAddress "$FirstRecpient,$SecondRecipient" -FromAddress $SenderAddress -Subject "($Env:ComputerName) has found another DHCP server!" -Body "The DHCP server ($Env:ComputerName) has found another DHCP server on the network that belongs to the AD domain...address immediately!`r`n`r`n$RogueADDHCPServerLogs"
+            Send-Alert -ToAddress $Recipients -FromAddress $SenderAddress -Subject "($Env:ComputerName) has found another DHCP server!" -Body "The DHCP server ($Env:ComputerName) has found another DHCP server on the network that belongs to the AD domain...address immediately!`r`n`r`n$RogueADDHCPServerLogs"
         }
         if($TodaysDHCPLogs | Where-Object {$_.ID -eq 62}){
             [string]$RogueDHCPServerLogs = $TodaysDHCPLogs | Where-Object {$_.ID -eq 62} | Format-Table -AutoSize | Out-String
             Write-Host "The DHCP server ($Env:ComputerName) has found another DHCP server on the network...address immediately!`r`n`r`n$RogueDHCPServerLogs"
             Write-MSPLog -LogSource "MSP DHCP Monitor" -LogType "Warning" -LogMessage "The DHCP server ($Env:ComputerName) has found another DHCP server on the network...address immediately!`r`n`r`n$RogueDHCPServerLogs"
-            Send-Alert -ToAddress "$FirstRecpient,$SecondRecipient" -FromAddress $SenderAddress -Subject "($Env:ComputerName) has found another DHCP server!" -Body "The DHCP server ($Env:ComputerName) has found another DHCP server on the network...address immediately!`r`n`r`n$RogueDHCPServerLogs"
+            Send-Alert -ToAddress $Recipients -FromAddress $SenderAddress -Subject "($Env:ComputerName) has found another DHCP server!" -Body "The DHCP server ($Env:ComputerName) has found another DHCP server on the network...address immediately!`r`n`r`n$RogueDHCPServerLogs"
 
         }
 
