@@ -1,6 +1,6 @@
 $BlackListedMACs = @(
 "70ca973533d8",
-"3C528287DF5F"
+"f4428f17e290"
 )
 
 function Write-MSPLog {
